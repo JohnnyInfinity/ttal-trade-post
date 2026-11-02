@@ -1,0 +1,52 @@
+endpoint:
+  type: string
+  default: ""
+  description: "Apps Script web app URL (ends in /exec)."
+
+shared_secret:
+  type: string
+  default: ""
+  description: "Must match FORM_SHARED_SECRET in FormIntake.gs. Note: theme settings are visible to anyone who reads the site's JS."
+
+staff_only:
+  type: bool
+  default: true
+  description: "When on, only staff see the Post button. Turn off to use allowed_groups."
+
+allowed_groups:
+  type: list
+  list_type: compact
+  default: "trust_level_1"
+  description: "Group names that can use the form when staff_only is off. Staff always can."
+
+fx_tickers:
+  type: list
+  list_type: compact
+  default: "EURUSD|GBPUSD|USDJPY|AUDUSD|USDCAD|USDCHF|NZDUSD|EURGBP|EURJPY|GBPJPY|AUDJPY|EURAUD|EURCHF|GBPAUD|GBPCAD|CADJPY|CHFJPY|NZDJPY|EURNZD|AUDNZD|AUDCAD|GBPNZD|XAUUSD|XAGUSD|US30|NAS100|SPX500|UK100|GER40|USOIL"
+  description: "Ticker suggestions for the chart methods."
+
+link_label:
+  type: string
+  default: "Post a Trade"
+  description: "Text of the sidebar link."
+
+link_icon:
+  type: string
+  default: "bolt"
+  description: "FontAwesome icon name for the sidebar link (must also be in svg_icons)."
+
+svg_icons:
+  type: list
+  list_type: compact
+  default: "bolt"
+  description: "Extra icons to include in the site's icon sprite."
+
+show_floating_button:
+  type: bool
+  default: false
+  description: "Also show a floating Post button bottom-right."
+
+button_label:
+  type: string
+  default: "Post"
+  description: "Label on the floating button (if enabled)."
