@@ -15,10 +15,12 @@ export default apiInitializer("1.8", (api) => {
   if (!user) return;
 
   // ── who may see it ────────────────────────────────────────────────────────
-  const allowedGroups = (settings.allowed_groups || "")
+  // allowed_groups is a group_list setting: pipe-separated group ids (older builds may store names)
+  const allowed = String(settings.allowed_groups || "")
     .split("|").map((s) => s.trim().toLowerCase()).filter(Boolean);
-  const userGroups = (user.groups || []).map((g) => (g.name || "").toLowerCase());
-  const canUse = user.staff || (!settings.staff_only && allowedGroups.some((g) => userGroups.includes(g)));
+  const inAllowed = (user.groups || []).some((g) =>
+    allowed.includes(String(g.id)) || allowed.includes((g.name || "").toLowerCase()));
+  const canUse = user.staff || (!settings.staff_only && inAllowed);
   if (!canUse) return;
 
   /* ============================================================
