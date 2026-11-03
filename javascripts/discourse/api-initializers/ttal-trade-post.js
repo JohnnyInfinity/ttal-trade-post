@@ -333,7 +333,7 @@ export default apiInitializer("1.8", (api) => {
         ${state.result && state.result.error ? `<div class="errbox"><b>Didn't post.</b> ${esc(state.result.error)}<br><span style="font-size:12px;color:var(--muted)">Fix and tap Post again — a retry won't double-post.</span></div>` : ""}
         <div class="actions">
           <button class="btn primary" type="submit" ${state.busy ? "disabled" : ""}>${state.busy ? "Posting…" : "Post it"}</button>
-          <div class="count">${visibleCount()} fields</div>
+          <div class="count">${state.busy ? "Uploading and writing to your journal — this can take up to a minute. Keep this open." : "Posting can take up to a minute."}</div>
         </div>
       </form>`;
     bindForm();
