@@ -96,14 +96,22 @@ export default apiInitializer("1.8", (api) => {
   /* ============================================================ */
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const kindName = (k) => (k === "trade" ? "Trade Submission" : "Quick Post");
-  const fresh = () => ({ data: {}, shots: {}, errors: {}, busy: false, result: null, token: null });
+  const MAX_SHOTS = 4;
+  const fresh = () => ({ data: {}, shots: {}, errors: {}, extra: 0, busy: false, result: null, token: null });
 
   let overlay = null, app = null, crumbs = null;
   let state = null;
 
+  // Base slots per method/version, plus however many "Add another" extras the student opened (optional).
   function shotsFor(m, k) {
-    if (k === "trade" && m.tradeShots) return m.tradeShots.map((s) => ({ ...s, optional: !!m.shotOptional }));
-    return [{ key: "shot", label: "Screenshot", optional: !!m.shotOptional }];
+    const base = (k === "trade" && m.tradeShots)
+      ? m.tradeShots.map((s) => ({ ...s, optional: !!m.shotOptional }))
+      : [{ key: "shot", label: "Screenshot", optional: !!m.shotOptional }];
+    const extras = [];
+    for (let i = 1; i <= (state?.extra || 0) && base.length + extras.length < MAX_SHOTS; i++) {
+      extras.push({ key: "extra" + i, label: "Extra " + i, optional: true });
+    }
+    return base.concat(extras);
   }
 
   function activeFields() {
@@ -259,6 +267,7 @@ export default apiInitializer("1.8", (api) => {
           <input type="file" accept="image/*" aria-label="Upload ${esc(s.label)}">
         </div>${err ? `<span class="hint" style="color:var(--err);font-size:12px">${esc(err)}</span>` : ""}`;
       }).join("")}
+      ${shots.length < MAX_SHOTS ? `<button type="button" class="addshot" data-addshot>+ Add another screenshot</button>` : ""}
       ${shots.length > 1 ? '<span class="hint" style="font-size:12px;color:var(--muted)">Paste fills the first empty slot.</span>' : ""}
     </section>`;
 
@@ -305,6 +314,8 @@ export default apiInitializer("1.8", (api) => {
       t.oninput = () => { state.data.ticker = t.value.toUpperCase(); delete state.errors.ticker; t.closest(".f").classList.remove("err"); show(); };
       t.onblur = () => setTimeout(() => sugg.classList.remove("show"), 120);
     }
+    const add = form.querySelector("[data-addshot]");
+    if (add) add.onclick = () => { state.extra = (state.extra || 0) + 1; const y = overlay.scrollTop; renderForm(); overlay.scrollTop = y; };
     form.querySelectorAll("[data-drop]").forEach((drop) => {
       const key = drop.dataset.drop, file = drop.querySelector("input[type=file]");
       file.onchange = () => take(key, file.files[0]);
