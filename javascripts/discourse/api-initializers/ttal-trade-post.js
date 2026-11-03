@@ -194,7 +194,7 @@ export default apiInitializer("1.8", (api) => {
     overlay.className = "ttal-overlay";
     overlay.innerHTML = `<div class="ttal-post"><div class="ttal-wrap">
       <header class="top">
-        <div class="wordmark"><span class="bars"><i></i><i></i><i></i></span><span>THE<br>TRADING<br>ACADEMY</span></div>
+        <a class="wordmark" href="/" title="Home"><span class="bars"><i></i><i></i><i></i></span><span>THE<br>TRADING<br>ACADEMY</span></a>
         <div class="user">Posting as <b>${esc(user.username)}</b> <button class="close" type="button" aria-label="Close" title="Close">×</button></div>
       </header>
       <nav class="crumbs"></nav>
@@ -206,6 +206,12 @@ export default apiInitializer("1.8", (api) => {
     app = overlay.querySelector(".app");
     crumbs = overlay.querySelector(".crumbs");
     overlay.querySelector(".close").onclick = close;
+    overlay.querySelector(".wordmark").onclick = (e) => {
+      e.preventDefault();
+      if (state.busy) return;
+      close();
+      api.container.lookup("service:router").transitionTo("/");
+    };
     document.addEventListener("keydown", onKey);
     document.addEventListener("paste", onPaste);
     render();
