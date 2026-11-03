@@ -93,6 +93,58 @@ export default apiInitializer("1.8", (api) => {
       block: [THEME, RATIONALE], quickBlock: [], notesHint: "Theme or idea — what are you watching and why?" },
   ];
 
+  /* ---- method icons (inline SVG, brand style) ---- */
+  // TTAL method icons — 100x100, stroke style matching the S&D / H&S originals.
+  // B = blue price line, Z1 = lavender zone, Z2 = cyan zone, L = cyan level line.
+  const B = "#5B7FE0", Z1 = "#E9D5F5", Z2 = "#D6F4F7", L = "#8FE0E6";
+  const wrap = (inner) => `<svg viewBox="0 0 100 100" width="44" height="44" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  const line = (pts, c = B, w = 5) => `<polyline points="${pts}" stroke="${c}" stroke-width="${w}"/>`;
+  const rect = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+
+  const ICONS = {
+    // Supply & Demand — W with supply zone above, demand zone below (original)
+    sd: wrap(rect(32, 23, 40, 14, Z1) + rect(16, 63, 50, 14, Z2) +
+        line("13,53 24,76 38,24 53,70 64,28 75,55 87,11")),
+
+    // Head & Shoulders — three peaks, neckline (original)
+    hs: wrap(line("11,52 89,52", L, 3) +
+        line("15,76 28,31 40,53 50,23 60,53 73,31 85,76")),
+
+    // W/M Patterns — a clean W (double bottom) with the neckline across the middle peak
+    wm: wrap(line("14,44 86,44", L, 3) +
+        line("16,24 32,78 50,44 68,78 84,24")),
+
+    // Order Blocks — consolidation block, then the strong move away
+    ob: wrap(rect(16, 52, 32, 16, Z1) +
+        line("14,58 22,63 30,56 38,64 46,58 60,30 72,42 86,16")),
+
+    // Bollinger Bands — upper/lower bands with the moving average through the middle, price between
+    bb: wrap(`<path d="M12,28 C35,16 65,16 88,28" stroke="${L}" stroke-width="3"/>` +
+        `<path d="M12,72 C35,84 65,84 88,72" stroke="${L}" stroke-width="3"/>` +
+        `<path d="M12,52 C35,46 65,54 88,48" stroke="#C9A6EC" stroke-width="3"/>` +
+        line("14,42 28,66 42,54 56,70 70,40 86,36")),
+
+    // Fibonacci — retracement levels with price pulling back then continuing
+    fib: wrap(line("20,30 84,30", L, 3) + line("20,46 84,46", L, 3) + line("20,58 84,58", L, 3) + line("20,74 84,74", L, 3) +
+        line("14,80 44,24 60,56 86,14")),
+
+    // DXY — prior-day range band, price rejected from it
+    dxy: wrap(rect(14, 40, 72, 16, Z2) +
+        line("14,72 30,54 44,44 56,52 70,40 86,76")),
+
+    // OBOS — oscillator between overbought / oversold bands
+    obos: wrap(rect(12, 20, 76, 12, Z1) + rect(12, 68, 76, 12, Z2) +
+        `<path d="M12,52 C22,20 32,20 42,52 S62,84 72,52 S84,24 88,26" stroke="${B}" stroke-width="5"/>`),
+
+    // Macro Trend — long trend inside a channel
+    macro: wrap(line("10,66 90,20", L, 3) + line("10,90 90,44", L, 3) +
+        line("14,80 30,62 42,70 58,46 70,52 86,28")),
+
+    // Asymmetric Trend — small defined risk, large open reward
+    asym: wrap(rect(18, 62, 44, 10, Z1) + rect(44, 14, 42, 34, Z2) +
+        line("14,60 28,66 40,58 52,48 64,34 86,18")),
+  };
+
   /* ============================================================ */
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const kindName = (k) => (k === "trade" ? "Trade Submission" : "Quick Post");
@@ -130,7 +182,7 @@ export default apiInitializer("1.8", (api) => {
     out.push(...block);
     return out.filter((f) => !f.showIf || Object.entries(f.showIf).every(([kk, v]) => state.data[kk] === v));
   }
-  const visibleCount = () => activeFields().length + shotsFor(state.method, state.kind).length + (state.kind === "quick" ? 1 : 0);
+  const visibleCount = () => activeFields().length + shotsFor(state.method, state.kind).length + 1;
 
   /* ---- open / close ---- */
   function open() {
@@ -197,8 +249,8 @@ export default apiInitializer("1.8", (api) => {
       <h1>What are you posting?</h1>
       <p class="sub">Everything goes before the trade. Pick one.</p>
       <div class="tiles">
-        <button type="button" class="tile big trade" data-k="trade"><span class="ic">📝</span><span class="t">Trade Submission</span><span class="d">Full trade plan. Goes in your journal and The Trading Academy Live.</span></button>
-        <button type="button" class="tile big" data-k="quick"><span class="ic">⚡</span><span class="t">Quick Post</span><span class="d">Screenshot and a thought.</span></button>
+        <button type="button" class="tile big trade" data-k="trade"><span class="ic">📝</span><span class="t">Trade Submission</span><span class="d">${esc(settings.trade_tile_text || "Placing a trade? Use this.")}</span></button>
+        <button type="button" class="tile big" data-k="quick"><span class="ic">⚡</span><span class="t">Quick Post</span><span class="d">${esc(settings.quick_tile_text || "Potential trade? Share your idea here.")}</span></button>
       </div>`;
     app.querySelectorAll("[data-k]").forEach((b) => (b.onclick = () => go({ screen: "method", kind: b.dataset.k })));
   }
@@ -206,8 +258,8 @@ export default apiInitializer("1.8", (api) => {
   function renderMethods() {
     app.innerHTML = `
       <h1>Which method?</h1>
-      <p class="sub">${state.kind === "trade" ? "Trade parameters plus a couple of method questions." : "Screenshot, a couple of taps, notes."}</p>
-      <div class="tiles methods">${METHODS.map((m) => `<button type="button" class="tile" data-m="${m.id}"><span class="ic">${m.ic}</span><span class="t">${esc(m.name)}</span></button>`).join("")}</div>`;
+      ${state.kind === "quick" ? '<p class="sub">Screenshot, a couple of taps, notes.</p>' : ""}
+      <div class="tiles methods">${METHODS.map((m) => `<button type="button" class="tile" data-m="${m.id}"><span class="ic">${ICONS[m.id] || m.ic}</span><span class="t">${esc(m.name)}</span></button>`).join("")}</div>`;
     app.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => {
       const m = METHODS.find((x) => x.id === b.dataset.m);
       const data = {};
@@ -271,8 +323,8 @@ export default apiInitializer("1.8", (api) => {
       ${shots.length > 1 ? '<span class="hint" style="font-size:12px;color:var(--muted)">Paste fills the first empty slot.</span>' : ""}
     </section>`;
 
-    const notesHTML = k === "quick" ? `<section class="sec"><div class="lab">Notes</div>
-      <div class="f"><textarea id="ttal-notes" data-id="notes" placeholder="${esc(m.notesHint || "What are you seeing?")}">${esc(state.data.notes || "")}</textarea></div></section>` : "";
+    const notesHTML = `<section class="sec"><div class="lab">Notes${k === "trade" ? ' <small style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</small>' : ""}</div>
+      <div class="f"><textarea id="ttal-notes" data-id="notes" placeholder="${esc(k === "trade" ? "Anything else about this trade" : (m.notesHint || "What are you seeing?"))}">${esc(state.data.notes || "")}</textarea></div></section>`;
 
     app.innerHTML = `
       <h1>${esc(m.name)} <span>· ${kindName(k)}</span></h1>

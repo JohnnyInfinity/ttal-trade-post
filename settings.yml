@@ -25,6 +25,16 @@ fx_tickers:
   default: "EURUSD|GBPUSD|USDJPY|AUDUSD|USDCAD|USDCHF|NZDUSD|EURGBP|EURJPY|GBPJPY|AUDJPY|EURAUD|EURCHF|GBPAUD|GBPCAD|CADJPY|CHFJPY|NZDJPY|EURNZD|AUDNZD|AUDCAD|GBPNZD|XAUUSD|XAGUSD|US30|NAS100|SPX500|UK100|GER40|USOIL"
   description: "Ticker suggestions for the chart methods."
 
+trade_tile_text:
+  type: string
+  default: "Placing a trade? Use this."
+  description: "Description under the Trade Submission tile."
+
+quick_tile_text:
+  type: string
+  default: "Potential trade? Share your idea here."
+  description: "Description under the Quick Post tile."
+
 link_label:
   type: string
   default: "Post a Trade"
