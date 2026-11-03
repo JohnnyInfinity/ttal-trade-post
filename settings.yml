@@ -14,9 +14,10 @@ staff_only:
   description: "When on, only staff see the Post button. Turn off to use allowed_groups."
 
 allowed_groups:
-  type: group_list
+  type: list
+  list_type: compact
   default: ""
-  description: "Groups that can use the form when staff_only is off. Staff always can."
+  description: "Group NAMES (the lowercase slug from Admin → Groups) that can use the form when staff_only is off. Type one and press Enter. Staff always can."
 
 fx_tickers:
   type: list
