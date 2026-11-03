@@ -90,9 +90,9 @@ export default apiInitializer("1.8", (api) => {
         { id: "redflag", label: "Higher timeframe red flag?", type: "seg", options: YN, tradeOnly: true },
       ] },
     { id: "macro", name: "Macro Trend", ic: "🌍", core: "brent", tickers: [], tickerHint: "e.g. NVDA, TLT", shotOptional: true,
-      block: [RATIONALE], quickBlock: [], notesHint: "Theme or idea — what are you watching and why?" },
+      block: [], quickBlock: [], notesHint: "Theme or idea — what are you watching and why?" },
     { id: "asym", name: "Asymmetric Trend", ic: "⚖", core: "brent", tickers: [], tickerHint: "e.g. NVDA, TLT", shotOptional: true,
-      block: [THEME, RATIONALE], quickBlock: [], notesHint: "Theme or idea — what are you watching and why?" },
+      block: [], quickBlock: [], notesHint: "Theme or idea — what are you watching and why?" },
   ];
 
   /* ---- brand logo (white wordmark; inverted automatically on light schemes) ---- */
