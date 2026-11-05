@@ -40,6 +40,11 @@ link_label:
   default: "Post a Trade"
   description: "Text of the sidebar link."
 
+link_color:
+  type: string
+  default: "#A85DF8"
+  description: "Colour of the Post a Trade sidebar link (hex). Leave empty for the default sidebar colour."
+
 link_icon:
   type: string
   default: "bolt"

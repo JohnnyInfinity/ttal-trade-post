@@ -3,6 +3,16 @@
 // Colours come from Discourse's own variables so light/dark follow the site;
 // brand purple is the accent.
 
+// Sidebar link colour (from the link_color setting)
+@if $link_color != "" {
+  .sidebar-section-link[data-link-name="ttal-post"] {
+    color: #{$link_color};
+    font-weight: 700;
+    .sidebar-section-link-prefix, svg { color: #{$link_color}; }
+    &:hover { color: #{$link_color}; filter: brightness(1.15); }
+  }
+}
+
 .ttal-fab {
   position: fixed;
   right: max(16px, env(safe-area-inset-right, 0px));
