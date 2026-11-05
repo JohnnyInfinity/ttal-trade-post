@@ -84,7 +84,7 @@ export default apiInitializer("1.8", (api) => {
     { id: "fib", name: "Fibonacci", ic: "📐", core: "chart", tickers: FX, block: [] },
     { id: "dxy", name: "DXY", ic: "💱", core: "chart", noTicker: true, fixedTicker: "DXY", fixedTf: "15m",
       block: [{ id: "ar", label: "Attraction or rejection?", type: "seg", options: ["Attraction", "Rejection"] }] },
-    { id: "obos", name: "OBOS", ic: "📉", core: "chart", tickers: [], tickerHint: "e.g. AAPL", fixedTf: "D",
+    { id: "obos", name: "OBOS", ic: "📉", core: "chart", tickers: [], tickerHint: "e.g. AAPL", fixedTf: "D", noTp: true,   // exits on RSI/MACD signal, no price target
       block: [
         { id: "macd", label: "Entry: MACD cross or point?", type: "seg", options: ["Cross", "Point"], tradeOnly: true },
         { id: "redflag", label: "Higher timeframe red flag?", type: "seg", options: YN, tradeOnly: true },
@@ -179,6 +179,7 @@ export default apiInitializer("1.8", (api) => {
       let core = m.core === "brent" ? CORE_BRENT : CORE_CHART;
       if (m.core === "chart") {
         core = core.filter((f) => !(f.id === "timeframe" && m.fixedTf))
+                   .filter((f) => !(f.id === "tp" && m.noTp))
                    .map((f) => (f.id === "timeframe" && m.tf ? { ...f, options: m.tf } : f));
       }
       out.push(...core);
