@@ -101,6 +101,12 @@
   h1 span { color: var(--muted); font-weight: 600; }
   .sub { color: var(--muted); margin: 0 0 18px; font-size: 14px; }
 
+  .staffbox { margin: 0 0 16px; padding: 12px 14px; border: 1px dashed var(--brand-2); border-radius: var(--r); display: flex; flex-direction: column; gap: 8px; }
+  .staffbox label { font-size: 13px; font-weight: 700; color: var(--brand-2); margin: 0; }
+  .staffbox label small { font-weight: 500; color: var(--muted); }
+  .staffbox input { width: 100%; margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; min-height: 42px; box-shadow: none; }
+  .staffnote { font-weight: 500; color: var(--muted); font-size: 12px; }
+
   .tiles { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
   @media (min-width: 480px) { .tiles.methods { grid-template-columns: repeat(3, 1fr); } }
   .tile { background: var(--tile); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 14px; text-align: left; display: flex; flex-direction: column; gap: 6px; min-height: 92px; transition: transform .08s, border-color .12s, background .12s; }

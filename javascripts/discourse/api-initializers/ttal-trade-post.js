@@ -193,13 +193,13 @@ export default apiInitializer("1.8", (api) => {
   /* ---- open / close ---- */
   function open() {
     if (overlay) return;
-    state = { screen: "home", kind: null, method: null, ...fresh() };
+    state = { screen: "home", kind: null, method: null, asUser: "", ...fresh() };
     overlay = document.createElement("div");
     overlay.className = "ttal-overlay";
     overlay.innerHTML = `<div class="ttal-post"><div class="ttal-wrap">
       <header class="top">
         <a class="wordmark" href="/" title="Home"><img src="${LOGO}" alt="The Trading Academy"></a>
-        <div class="user">Posting as <b>${esc(user.username)}</b> <button class="close" type="button" aria-label="Close" title="Close">×</button></div>
+        <div class="user"><span class="who">Posting as <b>${esc(user.username)}</b></span> <button class="close" type="button" aria-label="Close" title="Close">×</button></div>
       </header>
       <nav class="crumbs"></nav>
       <main class="app"></main>
@@ -236,6 +236,15 @@ export default apiInitializer("1.8", (api) => {
   }
   function onKey(e) { if (e.key === "Escape") close(); }
 
+  function postingAs() { return state.asUser || user.username; }
+  function refreshWho() {
+    const w = overlay && overlay.querySelector(".who");
+    if (!w) return;
+    w.innerHTML = state.asUser
+      ? `Posting as <b>${esc(state.asUser)}</b> <span class="staffnote">· staff: ${esc(user.username)}</span>`
+      : `Posting as <b>${esc(user.username)}</b>`;
+  }
+
   function go(patch) { Object.assign(state, patch); render(); overlay.scrollTo({ top: 0 }); }
 
   function render() {
@@ -265,11 +274,37 @@ export default apiInitializer("1.8", (api) => {
     app.innerHTML = `
       <h1>What are you posting?</h1>
       <p class="sub">Everything goes before the trade. Pick one.</p>
+      ${user.staff ? `<div class="staffbox">
+        <label for="ttal-asuser">Staff: post as student <small>(leave blank to post as yourself)</small></label>
+        <div class="tick"><input id="ttal-asuser" type="text" autocomplete="off" spellcheck="false" placeholder="Discourse username" value="${esc(state.asUser || "")}"><div class="sugg"></div></div>
+      </div>` : ""}
       <div class="tiles">
         <button type="button" class="tile big trade" data-k="trade"><span class="ic">📝</span><span class="t">Trade Submission</span><span class="d">${esc(settings.trade_tile_text || "Placing a trade? Use this.")}</span></button>
         <button type="button" class="tile big" data-k="quick"><span class="ic">⚡</span><span class="t">Quick Post</span><span class="d">${esc(settings.quick_tile_text || "Potential trade? Share your idea here.")}</span></button>
       </div>`;
     app.querySelectorAll("[data-k]").forEach((b) => (b.onclick = () => go({ screen: "method", kind: b.dataset.k })));
+    const au = app.querySelector("#ttal-asuser");
+    if (au) {
+      const sugg = au.parentElement.querySelector(".sugg");
+      let timer = null;
+      const show = async () => {
+        const q = au.value.trim();
+        if (q.length < 2) { sugg.classList.remove("show"); sugg.innerHTML = ""; return; }
+        try {
+          const r = await fetch(`/u/search/users.json?term=${encodeURIComponent(q)}&include_groups=false&limit=8`, { credentials: "include", headers: { Accept: "application/json" } });
+          const j = await r.json();
+          const hits = (j.users || []).slice(0, 8);
+          if (!hits.length) { sugg.classList.remove("show"); sugg.innerHTML = ""; return; }
+          sugg.innerHTML = hits.map((u) => `<button type="button" data-u="${esc(u.username)}">${esc(u.username)}${u.name ? ` <span class="staffnote">${esc(u.name)}</span>` : ""}</button>`).join("");
+          sugg.classList.add("show");
+          sugg.querySelectorAll("[data-u]").forEach((b) => (b.onmousedown = (e) => { e.preventDefault(); au.value = b.dataset.u; state.asUser = b.dataset.u; sugg.classList.remove("show"); refreshWho(); }));
+        } catch (e) { /* ignore */ }
+      };
+      au.oninput = () => { state.asUser = au.value.trim(); refreshWho(); clearTimeout(timer); timer = setTimeout(show, 250); };
+      au.onfocus = show;
+      au.onblur = () => setTimeout(() => sugg.classList.remove("show"), 120);
+    }
+    refreshWho();
   }
 
   function renderMethods() {
@@ -449,7 +484,8 @@ export default apiInitializer("1.8", (api) => {
     const shots = {};
     for (const s of shotsFor(m, k)) shots[s.key] = state.shots[s.key] ? await shrink(state.shots[s.key]) : null;
     const payload = {
-      secret: settings.shared_secret, type: k, method: m.id, user: user.username, token: state.token,
+      secret: settings.shared_secret, type: k, method: m.id, user: postingAs(), token: state.token,
+      staff_user: (user.staff && state.asUser && state.asUser !== user.username) ? user.username : undefined,
       ticker: m.fixedTicker || (d.ticker || "").toUpperCase(),
       data: Object.fromEntries(Object.entries(d).filter(([kk, v]) => kk !== "ticker" && v !== undefined && v !== "")),
       screenshots: shots,
@@ -472,9 +508,9 @@ export default apiInitializer("1.8", (api) => {
         <button type="button" class="btn ${url ? "ghost" : "primary"}" data-again>Post another</button>
         <button type="button" class="btn ghost" data-close>Done</button>
       </div>
-      <p class="note">${state.kind === "trade" ? "Also written to your journal." : "Board only — no journal row."}</p>
+      <p class="note">${state.asUser ? "Posted on behalf of <b>" + esc(state.asUser) + "</b>. " : ""}${state.kind === "trade" ? "Also written to " + (state.asUser ? "their" : "your") + " journal." : "Board only — no journal row."}</p>
     </div>`;
-    app.querySelector("[data-again]").onclick = () => go({ screen: "home", kind: null, method: null, ...fresh() });
+    app.querySelector("[data-again]").onclick = () => go({ screen: "home", kind: null, method: null, asUser: state.asUser, ...fresh() });
     app.querySelector("[data-close]").onclick = close;
     const a = app.querySelector("a.btn");
     if (a) a.onclick = (e) => { e.preventDefault(); close(); api.container.lookup("service:router").transitionTo(url.replace(/^https?:\/\/[^/]+/, "")); };
